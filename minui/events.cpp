@@ -354,7 +354,8 @@ void ev_iterate_available_keys(const std::function<void(int)>& f) {
   }
 }
 
-void ev_iterate_touch_inputs(const std::function<void(int)>& action) {
+void ev_iterate_touch_inputs(const std::function<void(int)>& touch_device_detected,
+                             const std::function<void(int)>& action) {
   for (size_t i = 0; i < g_ev_dev_count; ++i) {
     // Use unsigned long to match ioctl's parameter type.
     unsigned long ev_bits[BITS_TO_LONGS(EV_MAX)] = {};  // NOLINT
@@ -369,6 +370,8 @@ void ev_iterate_touch_inputs(const std::function<void(int)>& action) {
     if (ioctl(ev_fdinfo[i].fd, EVIOCGBIT(EV_ABS, KEY_MAX), key_bits) == -1) {
       continue;
     }
+
+    touch_device_detected(ev_fdinfo[i].fd);
 
     for (int key_code = 0; key_code <= KEY_MAX; ++key_code) {
       if (test_bit(key_code, key_bits)) {
